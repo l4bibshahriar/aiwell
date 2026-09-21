@@ -7,7 +7,7 @@ import { fileURLToPath } from 'url';
 dotenv.config();
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const app = express();
-const upload = multer({ dest: path.join(__dirname, 'uploads/') });
+const upload = multer({ dest: process.env.VERCEL ? '/tmp/labib-ai-well-uploads/' : path.join(__dirname, 'uploads/') });
 app.use(express.json({ limit: '2mb' }));
 app.use(express.static(path.join(__dirname, 'public')));
 
@@ -62,4 +62,11 @@ app.post('/api/upload', upload.single('file'), (req, res) => {
 });
 
 app.get('*', (_, res) => res.sendFile(path.join(__dirname, 'public', 'index.html')));
-app.listen(process.env.PORT || 3000, () => console.log(`Labib AI Well running on http://localhost:${process.env.PORT || 3000}`));
+// Vercel runs this file as a serverless function. Do not call app.listen there.
+if (!process.env.VERCEL) {
+  app.listen(process.env.PORT || 3000, () => {
+    console.log(`Labib AI Well running on http://localhost:${process.env.PORT || 3000}`);
+  });
+}
+
+export default app;
